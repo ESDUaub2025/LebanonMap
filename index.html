@@ -287,6 +287,33 @@
       text-align: left;
     }
 
+    .leaflet-control-layers {
+      border: 1px solid #e7d8be;
+      border-radius: 12px;
+      box-shadow: 0 8px 18px rgba(128, 95, 58, 0.18);
+      overflow: hidden;
+    }
+
+    .leaflet-control-layers-expanded {
+      padding: 0.55rem 0.7rem;
+      background: rgba(255, 251, 242, 0.97);
+      color: #5f4a31;
+      font-family: "Space Mono", monospace;
+      font-size: 0.72rem;
+      min-width: 145px;
+    }
+
+    .leaflet-control-layers-selector {
+      accent-color: #ce6c27;
+    }
+
+    .leaflet-control-layers-base label {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-bottom: 0.28rem;
+    }
+
     @keyframes fade-in {
       from {
         opacity: 0;
@@ -410,10 +437,35 @@
       scrollWheelZoom: true
     });
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    const lightLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors",
       maxZoom: 19
-    }).addTo(map);
+    });
+
+    const satelliteLayer = L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      {
+        attribution:
+          "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+        maxZoom: 19
+      }
+    );
+
+    lightLayer.addTo(map);
+
+    L.control
+      .layers(
+        {
+          Light: lightLayer,
+          Satellite: satelliteLayer
+        },
+        null,
+        {
+          position: "topleft",
+          collapsed: false
+        }
+      )
+      .addTo(map);
 
     const pinIcon = L.divIcon({
       className: "",
