@@ -507,7 +507,7 @@
         toggleAria: "التبديل إلى الإنجليزية",
         coordinates: "الإحداثيات",
         layers: {
-          light: "خريطة فاتحة",
+          light: "خريطة فاتحة (عربي)",
           satellite: "صور الأقمار الصناعية"
         },
         villageButtonAria: (name) => `إظهار ${name} على الخريطة`
@@ -524,7 +524,7 @@
         toggleAria: "Switch to Arabic",
         coordinates: "Coordinates",
         layers: {
-          light: "Light",
+          light: "Light (EN)",
           satellite: "Satellite"
         },
         villageButtonAria: (name) => `Show ${name} on the map`
@@ -568,8 +568,14 @@
       scrollWheelZoom: true
     });
 
-    const lightLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    const lightLayerArabic = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors",
+      maxZoom: 19
+    });
+
+    const lightLayerEnglish = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
+      subdomains: "abcd",
       maxZoom: 19
     });
 
@@ -582,7 +588,31 @@
       }
     );
 
-    lightLayer.addTo(map);
+    let activeLightLayer = lightLayerArabic;
+    activeLightLayer.addTo(map);
+
+    function getTargetLightLayer() {
+      return currentLang === "en" ? lightLayerEnglish : lightLayerArabic;
+    }
+
+    function syncLightLayerWithLanguage() {
+      const wasLightActive = map.hasLayer(lightLayerArabic) || map.hasLayer(lightLayerEnglish);
+      const targetLightLayer = getTargetLightLayer();
+
+      if (map.hasLayer(lightLayerArabic)) {
+        map.removeLayer(lightLayerArabic);
+      }
+
+      if (map.hasLayer(lightLayerEnglish)) {
+        map.removeLayer(lightLayerEnglish);
+      }
+
+      activeLightLayer = targetLightLayer;
+
+      if (wasLightActive) {
+        activeLightLayer.addTo(map);
+      }
+    }
 
     function renderLayerControl() {
       if (layerControl) {
@@ -592,7 +622,7 @@
       const t = UI_TEXT[currentLang];
       layerControl = L.control.layers(
         {
-          [t.layers.light]: lightLayer,
+          [t.layers.light]: activeLightLayer,
           [t.layers.satellite]: satelliteLayer
         },
         null,
@@ -694,6 +724,7 @@
       langToggle.textContent = t.toggleLabel;
       langToggle.setAttribute("aria-label", t.toggleAria);
 
+      syncLightLayerWithLanguage();
       renderLayerControl();
       refreshMarkerLanguage();
       renderLocationList();
