@@ -97,10 +97,47 @@
     .subtitle {
       font-size: 0.82rem;
       color: var(--muted);
+      font-family: "Tajawal", sans-serif;
+      direction: rtl;
+      text-align: start;
+      margin-top: 0.2rem;
+    }
+
+    body.is-english .subtitle {
       font-family: "Space Mono", monospace;
       direction: ltr;
-      text-align: left;
-      margin-top: 0.2rem;
+    }
+
+    .lang-toggle {
+      position: fixed;
+      left: 1rem;
+      bottom: 1rem;
+      z-index: 1200;
+      border: 1px solid #d8ccb5;
+      background: linear-gradient(145deg, rgba(255, 253, 248, 0.96) 0%, rgba(244, 236, 223, 0.96) 100%);
+      color: #7c5f3f;
+      border-radius: 999px;
+      padding: 0.34rem 0.8rem;
+      font-family: "Tajawal", sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      line-height: 1.15;
+      min-height: 32px;
+      cursor: pointer;
+      backdrop-filter: blur(5px);
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+      white-space: nowrap;
+    }
+
+    .lang-toggle:hover {
+      transform: translateY(-1px);
+      border-color: #cfa97e;
+      box-shadow: 0 6px 14px rgba(152, 109, 70, 0.2);
+    }
+
+    .lang-toggle:focus-visible {
+      outline: 2px solid #d4894e;
+      outline-offset: 2px;
     }
 
     .pill {
@@ -138,12 +175,20 @@
     .aside-head {
       padding: 1rem 1rem 0.55rem;
       border-bottom: 1px solid var(--line);
+      font-family: "Tajawal", sans-serif;
+      font-size: 0.94rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-align: start;
+      letter-spacing: 0;
+    }
+
+    body.is-english .aside-head {
       font-family: "Space Mono", monospace;
       font-size: 0.76rem;
-      color: var(--muted);
-      direction: ltr;
-      text-align: left;
+      font-weight: 400;
       letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
     .count {
@@ -174,7 +219,8 @@
     .location-btn {
       width: 100%;
       border: none;
-      text-align: right;
+      text-align: start;
+      border-inline-start: 3px solid transparent;
       padding: 0.62rem 0.95rem;
       background: transparent;
       font: inherit;
@@ -193,9 +239,13 @@
       transform: translateX(-2px);
     }
 
+    body.is-english .location-btn:hover {
+      transform: translateX(2px);
+    }
+
     .location-btn.is-active {
       background: #feecd9;
-      box-shadow: inset 3px 0 0 #cb6a25;
+      border-inline-start-color: #cb6a25;
     }
 
     .dot {
@@ -266,17 +316,19 @@
       font-size: 1rem;
       font-weight: 700;
       margin-bottom: 0.15rem;
-      direction: rtl;
-      text-align: right;
+      text-align: start;
     }
 
     .popup-sub {
       font-size: 0.75rem;
       color: #6f6658;
-      font-family: "Space Mono", monospace;
+      font-family: "Tajawal", sans-serif;
       margin-bottom: 0.15rem;
-      direction: ltr;
-      text-align: left;
+      text-align: start;
+    }
+
+    body.is-english .popup-sub {
+      font-family: "Space Mono", monospace;
     }
 
     .popup-coord {
@@ -298,9 +350,14 @@
       padding: 0.55rem 0.7rem;
       background: rgba(255, 251, 242, 0.97);
       color: #5f4a31;
+      font-family: "Tajawal", sans-serif;
+      font-size: 0.8rem;
+      min-width: 145px;
+    }
+
+    body.is-english .leaflet-control-layers-expanded {
       font-family: "Space Mono", monospace;
       font-size: 0.72rem;
-      min-width: 145px;
     }
 
     .leaflet-control-layers-selector {
@@ -374,31 +431,38 @@
       .pill {
         align-self: flex-start;
       }
+
+      .lang-toggle {
+        left: 0.75rem;
+        bottom: 0.75rem;
+      }
     }
   </style>
 </head>
 <body>
+  <button class="lang-toggle" id="lang-toggle" type="button" aria-label="التبديل إلى الإنجليزية">English</button>
+
   <div class="shell">
     <header>
       <div class="title-wrap">
         <div class="badge" aria-hidden="true">🗺</div>
         <div>
-          <h1>خريطة البقاع - Bekaa Valley Map</h1>
-          <p class="subtitle">Lebanon · Interactive Bekaa Locations</p>
+          <h1 id="page-heading">خريطة البقاع</h1>
+          <p class="subtitle" id="page-subtitle">لبنان · مواقع تفاعلية في البقاع</p>
         </div>
       </div>
-      <div class="pill" id="pill-count">17 locations</div>
+      <div class="pill" id="pill-count">17 موقع</div>
     </header>
 
     <main>
       <aside>
-        <div class="aside-head">Locations</div>
+        <div class="aside-head" id="aside-title">المواقع</div>
         <div class="count" id="side-count">17 مناطق محددة</div>
         <ul class="location-list" id="location-list"></ul>
       </aside>
 
       <section class="map-frame">
-        <div id="map" role="application" aria-label="Bekaa valley map"></div>
+        <div id="map" role="application" aria-label="خريطة البقاع التفاعلية"></div>
       </section>
     </main>
   </div>
@@ -411,24 +475,91 @@
 
   <script>
     const LOCATIONS = [
-      { name: "تمنين", ar: "Tamnine", lat: 33.872, lon: 36.006 },
-      { name: "تربل", ar: "Tarboul", lat: 33.830, lon: 36.062 },
-      { name: "رياق", ar: "Riyaq", lat: 33.896, lon: 36.044 },
-      { name: "كفرذبد", ar: "Kfar Zabad", lat: 33.747, lon: 35.877 },
-      { name: "فرزل", ar: "Ferzol", lat: 33.837, lon: 35.972 },
-      { name: "نيحا", ar: "Niha", lat: 33.578, lon: 35.771 },
-      { name: "ابلح", ar: "Ablah", lat: 33.832, lon: 35.962 },
-      { name: "زحلة", ar: "Zahle", lat: 33.847, lon: 35.902 },
-      { name: "معلقة", ar: "Maalaka", lat: 33.855, lon: 35.898 },
-      { name: "مجدل عنجر", ar: "Majdel Anjar", lat: 33.724, lon: 35.929 },
-      { name: "عنجر", ar: "Anjar", lat: 33.726, lon: 35.936 },
-      { name: "المرج", ar: "Al Marj", lat: 33.698, lon: 35.952 },
-      { name: "برالياس", ar: "Bar Elias", lat: 33.770, lon: 35.873 },
-      { name: "قب الياس", ar: "Qab Elias", lat: 33.793, lon: 35.842 },
-      { name: "منصورة", ar: "Mansourieh", lat: 33.754, lon: 35.921 },
-      { name: "قرعون", ar: "Qaraoun", lat: 33.553, lon: 35.688 },
-      { name: "راشيا", ar: "Rashaya", lat: 33.500, lon: 35.838 }
+      { nameAr: "تمنين", nameEn: "Tamnine", lat: 33.872, lon: 36.006 },
+      { nameAr: "تربل", nameEn: "Tarboul", lat: 33.830, lon: 36.062 },
+      { nameAr: "رياق", nameEn: "Riyaq", lat: 33.896, lon: 36.044 },
+      { nameAr: "كفرذبد", nameEn: "Kfar Zabad", lat: 33.747, lon: 35.877 },
+      { nameAr: "فرزل", nameEn: "Ferzol", lat: 33.837, lon: 35.972 },
+      { nameAr: "نيحا", nameEn: "Niha", lat: 33.578, lon: 35.771 },
+      { nameAr: "ابلح", nameEn: "Ablah", lat: 33.832, lon: 35.962 },
+      { nameAr: "زحلة", nameEn: "Zahle", lat: 33.847, lon: 35.902 },
+      { nameAr: "معلقة", nameEn: "Maalaka", lat: 33.855, lon: 35.898 },
+      { nameAr: "مجدل عنجر", nameEn: "Majdel Anjar", lat: 33.724, lon: 35.929 },
+      { nameAr: "عنجر", nameEn: "Anjar", lat: 33.726, lon: 35.936 },
+      { nameAr: "المرج", nameEn: "Al Marj", lat: 33.698, lon: 35.952 },
+      { nameAr: "برالياس", nameEn: "Bar Elias", lat: 33.770, lon: 35.873 },
+      { nameAr: "قب الياس", nameEn: "Qab Elias", lat: 33.793, lon: 35.842 },
+      { nameAr: "منصورة", nameEn: "Mansourieh", lat: 33.754, lon: 35.921 },
+      { nameAr: "قرعون", nameEn: "Qaraoun", lat: 33.553, lon: 35.688 },
+      { nameAr: "راشيا", nameEn: "Rashaya", lat: 33.500, lon: 35.838 }
     ];
+
+    const UI_TEXT = {
+      ar: {
+        pageTitle: "خريطة البقاع | لبنان",
+        heading: "خريطة البقاع",
+        subtitle: "لبنان · مواقع تفاعلية في البقاع",
+        asideTitle: "المواقع",
+        countLabel: (count) => `${count} منطقة محددة`,
+        pillLabel: (count) => `${count} موقع`,
+        mapAria: "خريطة البقاع التفاعلية",
+        toggleLabel: "English",
+        toggleAria: "التبديل إلى الإنجليزية",
+        coordinates: "الإحداثيات",
+        layers: {
+          light: "خريطة فاتحة",
+          satellite: "صور الأقمار الصناعية"
+        },
+        villageButtonAria: (name) => `إظهار ${name} على الخريطة`
+      },
+      en: {
+        pageTitle: "Bekaa Valley Map | Lebanon",
+        heading: "Bekaa Valley Map",
+        subtitle: "Lebanon · Interactive Bekaa Locations",
+        asideTitle: "Locations",
+        countLabel: (count) => `${count} selected locations`,
+        pillLabel: (count) => `${count} locations`,
+        mapAria: "Interactive Bekaa valley map",
+        toggleLabel: "العربية",
+        toggleAria: "Switch to Arabic",
+        coordinates: "Coordinates",
+        layers: {
+          light: "Light",
+          satellite: "Satellite"
+        },
+        villageButtonAria: (name) => `Show ${name} on the map`
+      }
+    };
+
+    let currentLang = "ar";
+    let activeIndex = 0;
+    let layerControl = null;
+    let itemButtons = [];
+
+    const pageTitle = document.querySelector("title");
+    const heading = document.getElementById("page-heading");
+    const subtitle = document.getElementById("page-subtitle");
+    const asideTitle = document.getElementById("aside-title");
+    const locationList = document.getElementById("location-list");
+    const sideCount = document.getElementById("side-count");
+    const pillCount = document.getElementById("pill-count");
+    const langToggle = document.getElementById("lang-toggle");
+    const mapElement = document.getElementById("map");
+
+    function villageName(loc, lang) {
+      return lang === "ar" ? loc.nameAr : loc.nameEn;
+    }
+
+    function popupHtml(loc, lang) {
+      const t = UI_TEXT[lang];
+      return `
+        <div>
+          <div class="popup-title">${villageName(loc, lang)}</div>
+          <div class="popup-sub">${t.coordinates}</div>
+          <div class="popup-coord">${loc.lat.toFixed(4)}, ${loc.lon.toFixed(4)}</div>
+        </div>
+      `;
+    }
 
     const map = L.map("map", {
       center: [33.75, 35.90],
@@ -453,19 +584,25 @@
 
     lightLayer.addTo(map);
 
-    L.control
-      .layers(
+    function renderLayerControl() {
+      if (layerControl) {
+        layerControl.remove();
+      }
+
+      const t = UI_TEXT[currentLang];
+      layerControl = L.control.layers(
         {
-          Light: lightLayer,
-          Satellite: satelliteLayer
+          [t.layers.light]: lightLayer,
+          [t.layers.satellite]: satelliteLayer
         },
         null,
         {
-          position: "topleft",
+          position: currentLang === "ar" ? "topleft" : "topright",
           collapsed: false
         }
-      )
-      .addTo(map);
+      );
+      layerControl.addTo(map);
+    }
 
     const pinIcon = L.divIcon({
       className: "",
@@ -475,15 +612,7 @@
       popupAnchor: [0, -14]
     });
 
-    const locationList = document.getElementById("location-list");
-    const sideCount = document.getElementById("side-count");
-    const pillCount = document.getElementById("pill-count");
-
-    sideCount.textContent = `${LOCATIONS.length} مناطق محددة`;
-    pillCount.textContent = `${LOCATIONS.length} locations`;
-
     const markers = [];
-    const itemButtons = [];
     const bounds = L.latLngBounds();
 
     function activateItem(index) {
@@ -492,52 +621,106 @@
       });
     }
 
+    function refreshMarkerLanguage() {
+      markers.forEach((marker, index) => {
+        const loc = LOCATIONS[index];
+        marker.bindPopup(popupHtml(loc, currentLang));
+        marker.bindTooltip(villageName(loc, currentLang));
+      });
+
+      if (markers[activeIndex] && markers[activeIndex].isPopupOpen()) {
+        markers[activeIndex].openPopup();
+      }
+    }
+
+    function renderLocationList() {
+      const t = UI_TEXT[currentLang];
+
+      locationList.innerHTML = "";
+      itemButtons = [];
+
+      LOCATIONS.forEach((loc, index) => {
+        const listItem = document.createElement("li");
+        const button = document.createElement("button");
+        const shownName = villageName(loc, currentLang);
+
+        button.className = "location-btn";
+        button.style.animationDelay = `${index * 35}ms`;
+        button.type = "button";
+        button.setAttribute("aria-label", t.villageButtonAria(shownName));
+
+        button.innerHTML = `
+          <span class="dot"></span>
+          <span>
+            <span class="ar-name">${shownName}</span>
+            <span class="en-name">${loc.lat.toFixed(4)}, ${loc.lon.toFixed(4)}</span>
+          </span>
+        `;
+
+        button.addEventListener("click", () => {
+          activeIndex = index;
+          activateItem(index);
+          map.flyTo([loc.lat, loc.lon], 12, { duration: 0.8 });
+          markers[index].openPopup();
+        });
+
+        if (index === activeIndex) {
+          button.classList.add("is-active");
+        }
+
+        listItem.appendChild(button);
+        locationList.appendChild(listItem);
+        itemButtons.push(button);
+      });
+    }
+
+    function applyLanguage(lang) {
+      currentLang = lang;
+
+      const isEnglish = lang === "en";
+      const t = UI_TEXT[lang];
+
+      document.documentElement.lang = lang;
+      document.documentElement.dir = isEnglish ? "ltr" : "rtl";
+      document.body.classList.toggle("is-english", isEnglish);
+
+      pageTitle.textContent = t.pageTitle;
+      heading.textContent = t.heading;
+      subtitle.textContent = t.subtitle;
+      asideTitle.textContent = t.asideTitle;
+      sideCount.textContent = t.countLabel(LOCATIONS.length);
+      pillCount.textContent = t.pillLabel(LOCATIONS.length);
+      mapElement.setAttribute("aria-label", t.mapAria);
+      langToggle.textContent = t.toggleLabel;
+      langToggle.setAttribute("aria-label", t.toggleAria);
+
+      renderLayerControl();
+      refreshMarkerLanguage();
+      renderLocationList();
+      activateItem(activeIndex);
+    }
+
     LOCATIONS.forEach((loc, index) => {
       const marker = L.marker([loc.lat, loc.lon], { icon: pinIcon }).addTo(map);
 
-      marker.bindPopup(`
-        <div>
-          <div class="popup-title">${loc.name}</div>
-          <div class="popup-sub">${loc.ar}</div>
-          <div class="popup-coord">${loc.lat.toFixed(4)}, ${loc.lon.toFixed(4)}</div>
-        </div>
-      `);
-
-      marker.on("click", () => activateItem(index));
-      markers.push(marker);
-      bounds.extend([loc.lat, loc.lon]);
-
-      const listItem = document.createElement("li");
-      const button = document.createElement("button");
-      button.className = "location-btn";
-      button.style.animationDelay = `${index * 35}ms`;
-      button.type = "button";
-      button.setAttribute("aria-label", `إظهار ${loc.name} على الخريطة`);
-
-      button.innerHTML = `
-        <span class="dot"></span>
-        <span>
-          <span class="ar-name">${loc.name}</span>
-          <span class="en-name">${loc.ar}</span>
-        </span>
-      `;
-
-      button.addEventListener("click", () => {
+      marker.on("click", () => {
+        activeIndex = index;
         activateItem(index);
-        map.flyTo([loc.lat, loc.lon], 12, { duration: 0.8 });
-        marker.openPopup();
       });
 
-      listItem.appendChild(button);
-      locationList.appendChild(listItem);
-      itemButtons.push(button);
+      markers.push(marker);
+      bounds.extend([loc.lat, loc.lon]);
     });
 
     if (bounds.isValid()) {
       map.fitBounds(bounds.pad(0.1));
     }
 
-    activateItem(0);
+    langToggle.addEventListener("click", () => {
+      applyLanguage(currentLang === "ar" ? "en" : "ar");
+    });
+
+    applyLanguage("ar");
   </script>
 </body>
 </html>
